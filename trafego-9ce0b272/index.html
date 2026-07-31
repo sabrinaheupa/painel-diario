@@ -1,0 +1,503 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Página publicada num endereço público (GitHub Pages) para a equipe consultar sem login;
+     noindex impede que buscadores indexem números de faturamento. Não remova. -->
+<meta name="robots" content="noindex, nofollow">
+<title>Painel de Tráfego — Almacura</title>
+<style>
+  :root {
+    --brand: #628a4c;      /* verde oficial Almacura — formas grandes, barras, marca */
+    --bg: #F4F4F1;
+    --surface: #FFFFFF;
+    --surface-2: #EEEEE9;
+    --ink: #040404;        /* preto oficial */
+    --ink-soft: #4C514B;
+    --ink-faint: #666B65;  /* derivado do cinza #a6a6a6, escurecido p/ AA 4,5:1 em texto pequeno mesmo sobre --surface-2 */
+    --line: #E2E2DC;
+    --accent: #567A42;     /* verde da marca (#628a4c) escurecido um passo p/ contraste AA em texto pequeno */
+    --accent-soft: #EAF0E3;
+    --good: #2F7A5C;
+    --good-soft: #E4F1EA;
+    --warn: #A8761F;
+    --warn-soft: #F5EBD6;
+    --critical: #A8402F;
+    --critical-soft: #F6E5E1;
+    --shadow: 0 1px 2px rgba(4,4,4,0.05), 0 6px 24px rgba(4,4,4,0.05);
+    color-scheme: light dark;
+  }
+  /* Dark mode — preto oficial da marca (#040404) como fundo; cards um passo acima.
+     Ativa pelo tema do sistema; o toggle do viewer (data-theme) tem prioridade nos dois
+     sentidos. --ink-faint mais claro que o proporcional (achado do UX, round 25): tons
+     médios sobre superfície escura caíam abaixo do mínimo AA de 4,5:1 pra texto pequeno. */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #040404; --surface: #131512; --surface-2: #1D201B;
+      --ink: #EDEBE5; --ink-soft: #ADB2AA; --ink-faint: #979D94; --line: #272A25;
+      --brand: #628a4c;
+      --accent: #9CC284; --accent-soft: #24301C;
+      --good: #5CB98D; --good-soft: #163127;
+      --warn: #D4A455; --warn-soft: #33280F;
+      --critical: #DC7462; --critical-soft: #331A15;
+      --shadow: 0 1px 2px rgba(0,0,0,0.5), 0 6px 24px rgba(0,0,0,0.4);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #040404; --surface: #131512; --surface-2: #1D201B;
+    --ink: #EDEBE5; --ink-soft: #ADB2AA; --ink-faint: #979D94; --line: #272A25;
+    --brand: #628a4c;
+    --accent: #9CC284; --accent-soft: #24301C;
+    --good: #5CB98D; --good-soft: #163127;
+    --warn: #D4A455; --warn-soft: #33280F;
+    --critical: #DC7462; --critical-soft: #331A15;
+    --shadow: 0 1px 2px rgba(0,0,0,0.5), 0 6px 24px rgba(0,0,0,0.4);
+  }
+  * { box-sizing: border-box; }
+  html {
+    margin: 0; padding: 0; background: var(--bg);
+    border-top: 4px solid var(--brand); /* filete da marca no topo da página */
+  }
+  body {
+    margin: 0; padding: 0; color: var(--ink);
+    font-family: Montserrat, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 15px; line-height: 1.55; overflow-x: hidden;
+  }
+  h1, h2, h3 { font-family: "Apple Garamond", Garamond, "EB Garamond", Georgia, "Times New Roman", serif; margin: 0; font-weight: 700; }
+  .num { font-family: ui-monospace, "SF Mono", Consolas, "Roboto Mono", monospace; font-variant-numeric: tabular-nums; }
+  a { color: var(--accent); }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
+  @media (prefers-reduced-motion: no-preference) {
+    .tile, .tablewrap tbody tr td { transition: background-color 180ms ease, box-shadow 180ms ease, border-color 180ms ease; }
+  }
+  .wrap { max-width: 1140px; margin: 0 auto; padding: 0 20px 72px; }
+
+  /* ===== Masthead ===== */
+  header.top { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); }
+  .top-inner { max-width: 1140px; margin: 0 auto; padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .brand { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .brand .leaf { width: 22px; height: 22px; flex-shrink: 0; color: var(--brand); display: block; }
+  .brand h1 { font-size: 23px; letter-spacing: 0.01em; line-height: 1.15; }
+  .brand .tag { font-size: 10.5px; color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.14em; border-left: 2px solid var(--brand); padding-left: 10px; }
+  .meta-line { font-size: 12.5px; color: var(--ink-soft); text-align: left; line-height: 1.6; }
+  .meta-line strong { color: var(--ink); font-weight: 600; }
+  @media (max-width: 760px) { .brand .tag { border-left: none; padding-left: 0; width: 100%; } }
+
+  /* ===== Hero — números-manchete ===== */
+  .hero { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 30px 0 26px; }
+  @media (max-width: 900px) { .hero { grid-template-columns: repeat(2, 1fr); } }
+  /* Achado do UX (round 25): em celular estreito (~360-390px), 2 colunas deixavam ~100px
+     por tile — valores como "R$ 86.808,39" em serifa grande precisam de ~180-220px e
+     quebravam. 1 coluna dá a largura inteira pro número que precisa ser captado em 3s. */
+  @media (max-width: 480px) { .hero { grid-template-columns: 1fr; } }
+  .tile { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px 18px 16px; box-shadow: var(--shadow); overflow: hidden; }
+  .tile::before { content: ""; position: absolute; top: 0; left: 18px; right: 18px; height: 2px; background: linear-gradient(90deg, var(--brand), transparent); border-radius: 0 0 2px 2px; opacity: 0.55; }
+  .tile .label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.09em; color: var(--ink-faint); }
+  /* Números-manchete em serifa (voz da marca); mono fica só na tabela densa. */
+  .tile .value { font-family: "Apple Garamond", Garamond, "EB Garamond", Georgia, "Times New Roman", serif; font-size: 37px; font-weight: 700; letter-spacing: -0.015em; line-height: 1.05; margin-top: 8px; font-variant-numeric: tabular-nums; }
+  .tile .value .cur { font-size: 0.55em; font-weight: 400; color: var(--ink-faint); margin-right: 3px; }
+  .tile .sub { font-size: 12px; color: var(--ink-soft); margin-top: 6px; line-height: 1.5; }
+
+  /* ===== Painéis ===== */
+  section.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); margin-bottom: 26px; overflow: hidden; }
+  .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 22px 26px 16px; border-bottom: 1px solid var(--line); }
+  .panel-head h2 { font-size: 21px; letter-spacing: 0.005em; }
+  .panel-head .eyebrow { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.11em; color: var(--ink-faint); display: block; margin-bottom: 5px; }
+  .panel-head .eyebrow .eno { font-family: "Apple Garamond", Garamond, "EB Garamond", Georgia, "Times New Roman", serif; font-size: 14px; color: var(--accent); font-weight: 700; letter-spacing: 0.02em; }
+  .panel-body { padding: 18px 26px 26px; }
+  .rail-good { border-left: 4px solid var(--good); }
+  .rail-warn { border-left: 4px solid var(--warn); }
+  .rail-critical { border-left: 4px solid var(--critical); }
+  .rail-accent { border-left: 4px solid var(--brand); }
+  @media (max-width: 560px) {
+    .panel-head { padding: 18px 18px 14px; flex-wrap: wrap; }
+    .panel-body { padding: 16px 18px 20px; }
+  }
+
+  .pill { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; padding: 4px 11px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; }
+  .pill-good { background: var(--good-soft); color: var(--good); }
+  .pill-warn { background: var(--warn-soft); color: var(--warn); }
+  .pill-critical { background: var(--critical-soft); color: var(--critical); }
+  .pill-accent { background: var(--accent-soft); color: var(--accent); }
+
+  .callout { border-radius: 10px; padding: 14px 16px 14px 18px; margin: 14px 0; font-size: 13.5px; line-height: 1.55; }
+  .callout-critical { background: var(--critical-soft); border: 1px solid color-mix(in srgb, var(--critical) 45%, transparent); border-left: 4px solid var(--critical); }
+  /* Hierarquia visual entre alertas (achado do UX, round 25): 5 callouts vermelhos idênticos
+     na mesma tela faziam o vermelho parar de significar "isso é o mais urgente" já no
+     terceiro bloco. Âmbar = vale saber/monitorar; vermelho fica reservado pro que pede ação
+     ou decisão de orçamento agora. */
+  .callout-warn { background: var(--warn-soft); border: 1px solid color-mix(in srgb, var(--warn) 45%, transparent); border-left: 4px solid var(--warn); }
+  .callout-good { background: var(--good-soft); border: 1px solid color-mix(in srgb, var(--good) 45%, transparent); border-left: 4px solid var(--good); }
+  .callout strong { display: block; margin-bottom: 4px; }
+
+  /* ===== Tabelas ===== */
+  .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
+  table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 560px; }
+  th, td { padding: 9px 8px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th { background: var(--surface-2); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft); font-weight: 600; border-bottom: 2px solid color-mix(in srgb, var(--brand) 35%, var(--line)); }
+  tbody tr:last-child td { border-bottom: none; }
+  .tablewrap tbody tr:hover td, .tablewrap tbody tr:hover td:first-child { background: var(--surface-2); }
+  td.num, th.num { text-align: right; }
+  /* Data / Sessões (colunas 1-2) e Vendas / Vendas Meta / Vendas Google (colunas 3-5):
+     valores curtos (data DD/MM ou 1-4 dígitos) não precisam do mesmo respiro horizontal das
+     colunas de moeda — aperta pra tabela inteira caber sem rolagem lateral (pedido da
+     Sabrina, 20-21/07/2026, restaurado 23/07/2026 junto com o breakdown por canal). */
+  .tablewrap table th:nth-child(1), .tablewrap table td:nth-child(1),
+  .tablewrap table th:nth-child(2), .tablewrap table td:nth-child(2) {
+    padding-left: 6px; padding-right: 6px;
+  }
+  .tablewrap table th:nth-child(3), .tablewrap table td:nth-child(3),
+  .tablewrap table th:nth-child(4), .tablewrap table td:nth-child(4),
+  .tablewrap table th:nth-child(5), .tablewrap table td:nth-child(5) {
+    padding-left: 5px; padding-right: 5px;
+  }
+  /* Faturamento / Inv. Meta / Inv. Google / Inv. Total (colunas 9-12): mesmo aperto de
+     respiro horizontal, a pedido da Sabrina (21/07/2026). */
+  .tablewrap table th:nth-child(9), .tablewrap table td:nth-child(9),
+  .tablewrap table th:nth-child(10), .tablewrap table td:nth-child(10),
+  .tablewrap table th:nth-child(11), .tablewrap table td:nth-child(11),
+  .tablewrap table th:nth-child(12), .tablewrap table td:nth-child(12) {
+    padding-left: 6px; padding-right: 6px;
+  }
+  /* ROAS Google / Inv.-Venda site (colunas 15-16): "Inv./Venda site" era a maior label da
+     tabela e alargava a coluna sozinha, abrindo um vão visual à esquerda dela — pedido da
+     Sabrina, 21/07/2026. Cabeçalho quebrado em 2 linhas (igual Vnd./ROAS Meta/Google) +
+     padding mais estreito reduzem a largura da coluna e o vão some. */
+  .tablewrap table th:nth-child(15), .tablewrap table td:nth-child(15),
+  .tablewrap table th:nth-child(16), .tablewrap table td:nth-child(16) {
+    padding-left: 5px; padding-right: 5px;
+  }
+  .row-flag td { background: var(--warn-soft); }
+  /* Coluna "Data" fixa ao rolar tabelas largas na horizontal (mobile). */
+  .tablewrap table th:first-child, .tablewrap table td:first-child { position: sticky; left: 0; background: var(--surface); }
+  .tablewrap table thead th:first-child { background: var(--surface-2); }
+  .tablewrap table tr:last-child td:first-child { background: var(--surface-2); }
+
+  /* ===== Blocos de indicadores ===== */
+  .kv-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; margin: 14px 0; }
+  .kv { background: var(--surface-2); border-radius: 10px; padding: 12px 14px; border-left: 3px solid color-mix(in srgb, var(--brand) 40%, transparent); }
+  .kv .k { font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); }
+  .kv .v { font-size: 18px; margin-top: 4px; }
+  .spark-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 14px 0; }
+  @media (max-width: 560px) { .spark-grid { grid-template-columns: 1fr; } }
+  .spark-item { background: var(--surface-2); border-radius: 10px; padding: 12px 14px; }
+  .spark-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; gap: 8px; }
+  .spark-label { font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); }
+  .spark-last { font-size: 15px; font-weight: 600; }
+  .spark-svg { width: 100%; height: 44px; display: block; }
+  .wow-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 14px 0; }
+  @media (max-width: 560px) { .wow-grid { grid-template-columns: 1fr; } }
+  .wow-item { background: var(--surface-2); border-radius: 10px; padding: 12px 14px; }
+  .wow-label { font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); }
+  .wow-val { font-size: 21px; font-weight: 600; margin: 4px 0 2px; }
+  .wow-delta { font-size: 12px; font-weight: 600; }
+  .wow-up { color: var(--good); }
+  .wow-down { color: var(--critical); }
+  .wow-flat { color: var(--ink-faint); }
+  .wow-arrow { font-size: 13px; }
+  .barlist { display: flex; flex-direction: column; gap: 10px; margin: 14px 0; }
+  .baritem { display: grid; grid-template-columns: 130px 1fr 74px; align-items: center; gap: 10px; font-size: 13px; }
+  .baritem .name { color: var(--ink-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .bartrack { height: 8px; background: var(--surface-2); border-radius: 5px; overflow: hidden; }
+  .barfill { height: 100%; background: linear-gradient(90deg, var(--brand), var(--accent)); border-radius: 5px; }
+  .baritem .val { text-align: right; }
+  /* Achado do UX (round 25): as colunas fixas (130px nome + 74px valor = 204px) sozinhas já
+     tomavam boa parte da largura útil em celular estreito, sobrando pouco pra trilha da
+     barra — a comparação visual de eficiência entre campanhas (o ponto do gráfico) perdia
+     força justo ali. Estreita nome/valor e reduz a fonte pra devolver espaço à trilha. */
+  @media (max-width: 480px) {
+    .baritem { grid-template-columns: 84px 1fr 54px; gap: 6px; font-size: 12px; }
+  }
+
+  /* ===== Banner de ritmo de meta (pace) ===== */
+  .pace { display: flex; align-items: center; gap: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); padding: 18px 22px; margin-bottom: 26px; border-left: 4px solid var(--ink-faint); }
+  .pace.is-adiantado { border-left-color: var(--good); }
+  .pace.is-no_ritmo { border-left-color: var(--brand); }
+  .pace.is-atrasado { border-left-color: var(--critical); }
+  .pace-main { flex: 1; min-width: 0; }
+  .pace-title { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.09em; color: var(--ink-faint); }
+  .pace-bar { position: relative; height: 12px; background: var(--surface-2); border-radius: 6px; overflow: visible; margin: 10px 0 6px; }
+  .pace-fill { height: 100%; border-radius: 6px; background: linear-gradient(90deg, var(--brand), var(--accent)); }
+  .pace.is-adiantado .pace-fill { background: linear-gradient(90deg, var(--brand), var(--good)); }
+  .pace.is-atrasado .pace-fill { background: var(--critical); }
+  .pace-mark { position: absolute; top: -3px; width: 2px; height: 18px; background: var(--ink); border-radius: 1px; z-index: 2; }
+  .pace-mark::after { content: "hoje"; position: absolute; top: -14px; left: 50%; transform: translateX(-50%); font-size: 9px; color: var(--ink-soft); white-space: nowrap; z-index: 2; }
+  .pace-legend { font-size: 12.5px; color: var(--ink-soft); }
+  .pace-status { flex-shrink: 0; text-align: left; }
+  .pace-status .badge { font-size: 13px; font-weight: 600; padding: 5px 14px; border-radius: 999px; }
+  .pace.is-adiantado .badge { background: var(--good-soft); color: var(--good); }
+  .pace.is-no_ritmo .badge { background: var(--accent-soft); color: var(--accent); }
+  .pace.is-atrasado .badge { background: var(--critical-soft); color: var(--critical); }
+  /* Mobile: empilha status abaixo da barra e afasta o rótulo "hoje" da margem (teste 360px, UX). */
+  @media (max-width: 560px) {
+    .pace { flex-direction: column; align-items: stretch; gap: 12px; }
+    .pace-bar { margin-top: 16px; }
+  }
+
+  .alerta-topo { margin-bottom: 26px; }
+  .alerta-topo .callout { margin: 0; }
+  .footnote { font-size: 12px; color: var(--ink-faint); margin-top: 8px; }
+  ul.tight { margin: 8px 0; padding-left: 18px; }
+  ul.tight li { margin-bottom: 6px; font-size: 13.5px; }
+  .two-col { display: grid; grid-template-columns: 1.3fr 1fr; gap: 26px; }
+  @media (max-width: 820px) { .two-col { grid-template-columns: 1fr; } }
+  footer.end { text-align: center; color: var(--ink-faint); font-size: 11px; text-transform: uppercase; letter-spacing: 0.12em; padding: 28px 0 8px; border-top: 1px solid var(--line); margin-top: 8px; }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-inner">
+    <div class="brand">
+      <svg class="leaf" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21C7 21 4 17.5 4 13 4 7 9 3.5 19 3c.5 10-3 18-7 18Z" fill="currentColor"/><path d="M12 21c0-6 2-11 6-15" stroke="var(--surface)" stroke-width="1.2" stroke-linecap="round"/></svg>
+      <h1>Painel de Tráfego — Almacura</h1>
+      <span class="tag">Meta&nbsp;Ads · Google&nbsp;Ads · GA4 · Merchant&nbsp;Center</span>
+    </div>
+    <div class="meta-line">
+      <!-- METALINE:INICIO -->
+      Período: <strong>01/07 – 29/07/2026</strong> (29 dias) · Gerado em <strong>31/07/2026</strong><br>
+      Atualizado automaticamente todos os dias às 13h
+      <!-- METALINE:FIM -->
+    </div>
+  </div>
+</header>
+<div class="wrap">
+  <div class="hero">
+    <!-- HERO:INICIO -->
+    <div class="tile"><div class="label">Receita paga validada (GA4)</div><div class="value num"><span class="cur">R$</span>58.759,44</div><div class="sub">Meta + Google, transação real, não estimativa de plataforma</div></div>
+    <div class="tile"><div class="label">ROAS de mídia (real)</div><div class="value num">9,27×</div><div class="sub">R$ 6.341,29 investidos → R$ 58.759,44 em vendas pagas confirmadas</div></div>
+    <div class="tile"><div class="label">CAC real (blended)</div><div class="value num"><span class="cur">R$</span>24,20</div><div class="sub">262 vendas reais atribuídas a mídia paga</div></div>
+    <div class="tile"><div class="label">Faturamento total do site</div><div class="value num"><span class="cur">R$</span>139.568,73</div><div class="sub">Todos os canais (10.126 sessões) — não é retorno de mídia paga</div></div>
+      <!-- HERO:FIM -->
+  </div>
+  <!-- PACE:INICIO -->
+  <div class="pace is-no_ritmo">
+    <div class="pace-main">
+      <div class="pace-title">Ritmo da meta de faturamento · Julho</div>
+      <div class="pace-bar">
+        <div class="pace-fill" style="width:96.3%;"></div>
+        <div class="pace-mark" style="left:93.5%;"></div>
+      </div>
+      <div class="pace-legend">R$ 139.569 de R$ 145.000 (96,3% da meta) · o mês já está 93,5% decorrido — acompanhando o ritmo do calendário.</div>
+    </div>
+    <div class="pace-status"><span class="badge">No ritmo</span></div>
+  </div>
+      <!-- PACE:FIM -->
+  <div class="alerta-topo">
+    <!-- ALERTATOPO:INICIO -->
+    <div class="callout callout-critical"><strong>🚨 Cada real rende ~3,9× mais no Google neste mês</strong>ROAS de mídia real do mês: Google 14,47× vs. Meta 3,69× (o Meta reporta mais compras do que se confirmam no site — use sempre o real). No dia típico (mediana), o Meta roda a 2,43× — a média do mês está puxada por poucos dias fortes. Antes de subir verba, direcione o dinheiro novo pro Google — detalhe por canal na seção 01 abaixo.</div>
+      <!-- ALERTATOPO:FIM -->
+  </div>
+  <section class="panel rail-accent">
+    <div class="panel-head"><div><span class="eyebrow">Acompanhamento diário · Julho 2026</span><h2>Meta × Realizado — formato Almacura</h2></div><span class="pill pill-accent">Atualiza todo dia às 13h</span></div>
+    <div class="panel-body">
+      <!-- ALERTA:INICIO -->
+      <div class="callout callout-critical"><strong>🚨 Receita de ontem 45% abaixo do esperado</strong>29/07: R$2.979,43 vs. R$5.440,36 (média ajustada pra dia útil, já descontando efeito de fim de semana). Pode ser queda real de venda ou falha de tracking — cruze com pedidos reais da loja antes de agir.</div>
+      <!-- ALERTA:FIM -->
+      <div class="kv-grid">
+        <!-- KVGRID:INICIO -->
+        <div class="kv"><div class="k">Investido até agora</div><div class="v num">R$ 6.341,29</div></div>
+        <div class="kv"><div class="k">Dias restantes no mês</div><div class="v num">2</div></div>
+        <div class="kv"><div class="k">Meta de faturamento</div><div class="v num">R$ 145.000,00</div></div>
+        <div class="kv"><div class="k">Faturado até agora</div><div class="v num">R$ 139.568,73</div></div>
+        <div class="kv"><div class="k">Falta faturar</div><div class="v num">R$ 5.431,27</div></div>
+        <div class="kv"><div class="k">Faturam. diário necessário</div><div class="v num">R$ 2.715,64</div></div>
+        <div class="kv"><div class="k">ROAS de mídia (real)</div><div class="v num">9,27×</div></div>
+        <div class="kv"><div class="k">Faturamento ÷ verba (não é retorno de mídia)</div><div class="v num">22,01×</div></div>
+        <div class="kv"><div class="k">CPC Google / CPC Meta</div><div class="v num">R$ 1,13 · R$ 1,28</div></div>
+        <div class="kv"><div class="k">CTR Google / CTR Meta</div><div class="v num">1,83% · 1,74%</div></div>
+      <!-- KVGRID:FIM -->
+      </div>
+      <!-- SPARK:INICIO -->
+<div class="spark-grid">
+      <div class="spark-item">
+        <div class="spark-head"><span class="spark-label">Faturamento diário (mês)</span><span class="spark-last num">R$ 2.979</span></div>
+        <svg class="spark-svg" viewBox="0 0 240 44" preserveAspectRatio="none" role="img" aria-hidden="true"><defs><linearGradient id="sg-fat" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--accent)" stop-opacity="0.18"></stop><stop offset="1" stop-color="var(--accent)" stop-opacity="0"></stop></linearGradient></defs><polygon points="3.0,41.0 3.0,25.4 11.4,31.6 19.7,30.2 28.1,37.0 36.4,34.7 44.8,31.1 53.1,31.9 61.5,34.0 69.9,34.8 78.2,25.9 86.6,31.5 94.9,33.9 103.3,33.6 111.6,31.4 120.0,32.2 128.4,30.8 136.7,6.4 145.1,30.5 153.4,25.9 161.8,3.0 170.1,33.7 178.5,32.5 186.9,31.9 195.2,33.4 203.6,37.1 211.9,36.2 220.3,32.5 228.6,34.2 237.0,34.4 237.0,41.0" fill="url(#sg-fat)"></polygon><polyline points="3.0,25.4 11.4,31.6 19.7,30.2 28.1,37.0 36.4,34.7 44.8,31.1 53.1,31.9 61.5,34.0 69.9,34.8 78.2,25.9 86.6,31.5 94.9,33.9 103.3,33.6 111.6,31.4 120.0,32.2 128.4,30.8 136.7,6.4 145.1,30.5 153.4,25.9 161.8,3.0 170.1,33.7 178.5,32.5 186.9,31.9 195.2,33.4 203.6,37.1 211.9,36.2 220.3,32.5 228.6,34.2 237.0,34.4" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linejoin="round"></polyline><circle cx="237.0" cy="34.4" r="2.5" fill="var(--accent)"></circle></svg>
+      </div>
+      <div class="spark-item">
+        <div class="spark-head"><span class="spark-label">Vendas por dia (mês)</span><span class="spark-last num">12</span></div>
+        <svg class="spark-svg" viewBox="0 0 240 44" preserveAspectRatio="none" role="img" aria-hidden="true"><defs><linearGradient id="sg-ven" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--good)" stop-opacity="0.18"></stop><stop offset="1" stop-color="var(--good)" stop-opacity="0"></stop></linearGradient></defs><polygon points="3.0,41.0 3.0,23.2 11.4,27.5 19.7,29.4 28.1,34.9 36.4,34.9 44.8,33.0 53.1,29.4 61.5,32.4 69.9,33.0 78.2,23.2 86.6,31.2 94.9,33.0 103.3,31.2 111.6,29.4 120.0,33.6 128.4,30.0 136.7,9.1 145.1,30.6 153.4,25.7 161.8,3.0 170.1,33.0 178.5,31.2 186.9,25.7 195.2,28.7 203.6,34.3 211.9,33.6 220.3,29.4 228.6,32.4 237.0,33.6 237.0,41.0" fill="url(#sg-ven)"></polygon><polyline points="3.0,23.2 11.4,27.5 19.7,29.4 28.1,34.9 36.4,34.9 44.8,33.0 53.1,29.4 61.5,32.4 69.9,33.0 78.2,23.2 86.6,31.2 94.9,33.0 103.3,31.2 111.6,29.4 120.0,33.6 128.4,30.0 136.7,9.1 145.1,30.6 153.4,25.7 161.8,3.0 170.1,33.0 178.5,31.2 186.9,25.7 195.2,28.7 203.6,34.3 211.9,33.6 220.3,29.4 228.6,32.4 237.0,33.6" fill="none" stroke="var(--good)" stroke-width="1.5" stroke-linejoin="round"></polyline><circle cx="237.0" cy="33.6" r="2.5" fill="var(--good)"></circle></svg>
+      </div>
+      </div>
+      <!-- SPARK:FIM -->
+      <!-- WOW:INICIO -->
+<div class="wow-grid">
+      <div class="wow-item">
+        <div class="wow-label">Faturamento · últimos 7 dias</div>
+        <div class="wow-val num">R$ 21.465</div>
+        <div class="wow-delta wow-down"><span class="wow-arrow">↓</span> -61,9% vs. 7 dias antes</div>
+      </div>
+      <div class="wow-item">
+        <div class="wow-label">Vendas · últimos 7 dias</div>
+        <div class="wow-val num">113</div>
+        <div class="wow-delta wow-down"><span class="wow-arrow">↓</span> -44,3% vs. 7 dias antes</div>
+      </div>
+      <div class="wow-item">
+        <div class="wow-label">ROAS de mídia · últimos 7 dias</div>
+        <div class="wow-val num">9,72×</div>
+        <div class="wow-delta wow-down"><span class="wow-arrow">↓</span> -35,6% vs. 7 dias antes</div>
+      </div>
+      </div>
+      <p class="footnote">Padrão do mês: fins de semana vendem 34% menos que dias úteis e o custo por venda fica 20% maior — vale considerar reduzir o orçamento diário de sáb/dom e reforçar ter–sex.</p>
+      <!-- WOW:FIM -->
+      <!-- MOM:INICIO -->
+
+      <!-- MOM:FIM -->
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Data</th><th class="num">Sessões</th><th class="num">Vendas</th><th class="num">Vnd.<br>Meta</th><th class="num">Vnd.<br>Google</th><th class="num">Tx.Conv</th><th class="num">CPS</th><th class="num">Ticket</th><th class="num">Faturamento</th><th class="num">Inv. Meta</th><th class="num">Inv. Google</th><th class="num">Inv. Total</th><th class="num">ROAS Real</th><th class="num">ROAS<br>Meta</th><th class="num">ROAS<br>Google</th><th class="num" title="investimento em mídia ÷ TODAS as vendas do site (inclui orgânicas) — o CAC de mídia real está no topo do painel">Inv./Venda<br>site</th></tr></thead>
+          <tbody>
+            <!-- TABELA:INICIO -->
+            <tr><td>01/07</td><td class="num">663</td><td class="num">29</td><td class="num">1</td><td class="num">15</td><td class="num">4,37%</td><td class="num">R$0,49</td><td class="num">R$243,73</td><td class="num">R$7.068,03</td><td class="num">R$171,92</td><td class="num">R$154,85</td><td class="num">R$326,77</td><td class="num">21,63×</td><td class="num">1,17×</td><td class="num">27,10×</td><td class="num">R$11,27</td></tr>
+            <tr><td>02/07</td><td class="num">434</td><td class="num">22</td><td class="num">2</td><td class="num">8</td><td class="num">5,07%</td><td class="num">R$0,72</td><td class="num">R$194,10</td><td class="num">R$4.270,27</td><td class="num">R$177,81</td><td class="num">R$134,85</td><td class="num">R$312,66</td><td class="num">13,66×</td><td class="num">1,80×</td><td class="num">13,41×</td><td class="num">R$14,21</td></tr>
+            <tr><td>03/07</td><td class="num">353</td><td class="num">19</td><td class="num">0</td><td class="num">6</td><td class="num">5,38%</td><td class="num">R$0,82</td><td class="num">R$257,77</td><td class="num">R$4.897,58</td><td class="num">R$159,91</td><td class="num">R$128,27</td><td class="num">R$288,18</td><td class="num">17,00×</td><td class="num">0,00×</td><td class="num">12,65×</td><td class="num">R$15,17</td></tr>
+            <tr><td>04/07</td><td class="num">303</td><td class="num">10</td><td class="num">0</td><td class="num">4</td><td class="num">3,30%</td><td class="num">R$0,88</td><td class="num">R$180,92</td><td class="num">R$1.809,20</td><td class="num">R$149,90</td><td class="num">R$117,12</td><td class="num">R$267,02</td><td class="num">6,78×</td><td class="num">0,00×</td><td class="num">6,07×</td><td class="num">R$26,70</td></tr>
+            <tr><td>05/07</td><td class="num">246</td><td class="num">10</td><td class="num">2</td><td class="num">2</td><td class="num">4,07%</td><td class="num">R$1,26</td><td class="num">R$286,59</td><td class="num">R$2.865,93</td><td class="num">R$204,29</td><td class="num">R$106,85</td><td class="num">R$311,14</td><td class="num">9,21×</td><td class="num">1,83×</td><td class="num">9,32×</td><td class="num">R$31,11</td></tr>
+            <tr><td>06/07</td><td class="num">412</td><td class="num">13</td><td class="num">2</td><td class="num">6</td><td class="num">3,16%</td><td class="num">R$0,87</td><td class="num">R$345,62</td><td class="num">R$4.493,09</td><td class="num">R$175,20</td><td class="num">R$184,58</td><td class="num">R$359,78</td><td class="num">12,49×</td><td class="num">2,71×</td><td class="num">17,08×</td><td class="num">R$27,68</td></tr>
+            <tr><td>07/07</td><td class="num">449</td><td class="num">19</td><td class="num">0</td><td class="num">7</td><td class="num">4,23%</td><td class="num">R$0,76</td><td class="num">R$217,28</td><td class="num">R$4.128,40</td><td class="num">R$155,68</td><td class="num">R$184,08</td><td class="num">R$339,76</td><td class="num">12,15×</td><td class="num">0,00×</td><td class="num">6,94×</td><td class="num">R$17,88</td></tr>
+            <tr><td>08/07</td><td class="num">399</td><td class="num">14</td><td class="num">1</td><td class="num">6</td><td class="num">3,51%</td><td class="num">R$0,71</td><td class="num">R$228,78</td><td class="num">R$3.202,96</td><td class="num">R$160,52</td><td class="num">R$123,51</td><td class="num">R$284,03</td><td class="num">11,28×</td><td class="num">1,09×</td><td class="num">9,63×</td><td class="num">R$20,29</td></tr>
+            <tr><td>09/07</td><td class="num">338</td><td class="num">13</td><td class="num">2</td><td class="num">7</td><td class="num">3,85%</td><td class="num">R$0,74</td><td class="num">R$218,45</td><td class="num">R$2.839,87</td><td class="num">R$124,07</td><td class="num">R$126,00</td><td class="num">R$250,07</td><td class="num">11,36×</td><td class="num">1,91×</td><td class="num">11,33×</td><td class="num">R$19,24</td></tr>
+            <tr><td>10/07</td><td class="num">403</td><td class="num">29</td><td class="num">1</td><td class="num">19</td><td class="num">7,20%</td><td class="num">R$0,57</td><td class="num">R$237,35</td><td class="num">R$6.883,04</td><td class="num">R$81,38</td><td class="num">R$147,25</td><td class="num">R$228,63</td><td class="num">30,11×</td><td class="num">6,99×</td><td class="num">18,33×</td><td class="num">R$7,88</td></tr>
+            <tr><td>11/07</td><td class="num">404</td><td class="num">16</td><td class="num">1</td><td class="num">7</td><td class="num">3,96%</td><td class="num">R$0,40</td><td class="num">R$269,32</td><td class="num">R$4.309,16</td><td class="num">R$75,17</td><td class="num">R$87,55</td><td class="num">R$162,72</td><td class="num">26,48×</td><td class="num">0,91×</td><td class="num">20,69×</td><td class="num">R$10,17</td></tr>
+            <tr><td>12/07</td><td class="num">322</td><td class="num">13</td><td class="num">0</td><td class="num">6</td><td class="num">4,04%</td><td class="num">R$0,69</td><td class="num">R$246,59</td><td class="num">R$3.205,66</td><td class="num">R$126,95</td><td class="num">R$95,35</td><td class="num">R$222,30</td><td class="num">14,42×</td><td class="num">0,00×</td><td class="num">17,83×</td><td class="num">R$17,10</td></tr>
+            <tr><td>13/07</td><td class="num">440</td><td class="num">16</td><td class="num">1</td><td class="num">7</td><td class="num">3,64%</td><td class="num">R$0,56</td><td class="num">R$210,50</td><td class="num">R$3.367,98</td><td class="num">R$114,24</td><td class="num">R$132,06</td><td class="num">R$246,30</td><td class="num">13,67×</td><td class="num">0,99×</td><td class="num">12,93×</td><td class="num">R$15,39</td></tr>
+            <tr><td>14/07</td><td class="num">382</td><td class="num">19</td><td class="num">1</td><td class="num">8</td><td class="num">4,97%</td><td class="num">R$0,63</td><td class="num">R$229,41</td><td class="num">R$4.358,71</td><td class="num">R$112,25</td><td class="num">R$128,19</td><td class="num">R$240,44</td><td class="num">18,13×</td><td class="num">2,43×</td><td class="num">11,40×</td><td class="num">R$12,65</td></tr>
+            <tr><td>15/07</td><td class="num">305</td><td class="num">12</td><td class="num">1</td><td class="num">2</td><td class="num">3,93%</td><td class="num">R$0,70</td><td class="num">R$333,97</td><td class="num">R$4.007,69</td><td class="num">R$92,53</td><td class="num">R$120,25</td><td class="num">R$212,78</td><td class="num">18,84×</td><td class="num">0,78×</td><td class="num">5,56×</td><td class="num">R$17,73</td></tr>
+            <tr><td>16/07</td><td class="num">317</td><td class="num">18</td><td class="num">1</td><td class="num">7</td><td class="num">5,68%</td><td class="num">R$0,78</td><td class="num">R$256,35</td><td class="num">R$4.614,28</td><td class="num">R$91,67</td><td class="num">R$154,89</td><td class="num">R$246,56</td><td class="num">18,71×</td><td class="num">1,63×</td><td class="num">14,60×</td><td class="num">R$13,70</td></tr>
+            <tr><td>17/07</td><td class="num">503</td><td class="num">52</td><td class="num">8</td><td class="num">5</td><td class="num">10,34%</td><td class="num">R$0,44</td><td class="num">R$302,39</td><td class="num">R$15.724,06</td><td class="num">R$98,42</td><td class="num">R$123,58</td><td class="num">R$222,00</td><td class="num">70,83×</td><td class="num">23,97×</td><td class="num">8,93×</td><td class="num">R$4,27</td></tr>
+            <tr><td>18/07</td><td class="num">219</td><td class="num">17</td><td class="num">3</td><td class="num">7</td><td class="num">7,76%</td><td class="num">R$0,60</td><td class="num">R$280,15</td><td class="num">R$4.762,48</td><td class="num">R$58,71</td><td class="num">R$71,73</td><td class="num">R$130,44</td><td class="num">36,51×</td><td class="num">21,15×</td><td class="num">17,91×</td><td class="num">R$7,67</td></tr>
+            <tr><td>19/07</td><td class="num">243</td><td class="num">25</td><td class="num">5</td><td class="num">5</td><td class="num">10,29%</td><td class="num">R$0,65</td><td class="num">R$275,07</td><td class="num">R$6.876,78</td><td class="num">R$92,51</td><td class="num">R$64,86</td><td class="num">R$157,37</td><td class="num">43,70×</td><td class="num">14,45×</td><td class="num">25,18×</td><td class="num">R$6,29</td></tr>
+            <tr><td>20/07</td><td class="num">458</td><td class="num">62</td><td class="num">3</td><td class="num">13</td><td class="num">13,54%</td><td class="num">R$0,42</td><td class="num">R$278,56</td><td class="num">R$17.270,58</td><td class="num">R$78,65</td><td class="num">R$112,16</td><td class="num">R$190,81</td><td class="num">90,51×</td><td class="num">9,81×</td><td class="num">29,75×</td><td class="num">R$3,08</td></tr>
+            <tr><td>21/07</td><td class="num">299</td><td class="num">13</td><td class="num">1</td><td class="num">6</td><td class="num">4,35%</td><td class="num">R$0,52</td><td class="num">R$253,56</td><td class="num">R$3.296,25</td><td class="num">R$68,66</td><td class="num">R$86,87</td><td class="num">R$155,53</td><td class="num">21,19×</td><td class="num">2,22×</td><td class="num">11,74×</td><td class="num">R$11,96</td></tr>
+            <tr><td>22/07</td><td class="num">304</td><td class="num">16</td><td class="num">1</td><td class="num">12</td><td class="num">5,26%</td><td class="num">R$0,59</td><td class="num">R$240,75</td><td class="num">R$3.851,98</td><td class="num">R$71,53</td><td class="num">R$109,34</td><td class="num">R$180,87</td><td class="num">21,30×</td><td class="num">0,89×</td><td class="num">24,15×</td><td class="num">R$11,30</td></tr>
+            <tr><td>23/07</td><td class="num">334</td><td class="num">25</td><td class="num">3</td><td class="num">9</td><td class="num">7,49%</td><td class="num">R$0,56</td><td class="num">R$165,20</td><td class="num">R$4.130,04</td><td class="num">R$75,73</td><td class="num">R$110,91</td><td class="num">R$186,64</td><td class="num">22,13×</td><td class="num">8,46×</td><td class="num">14,21×</td><td class="num">R$7,47</td></tr>
+            <tr><td>24/07</td><td class="num">270</td><td class="num">20</td><td class="num">2</td><td class="num">12</td><td class="num">7,41%</td><td class="num">R$0,58</td><td class="num">R$173,69</td><td class="num">R$3.473,85</td><td class="num">R$70,84</td><td class="num">R$84,62</td><td class="num">R$155,46</td><td class="num">22,35×</td><td class="num">7,54×</td><td class="num">18,89×</td><td class="num">R$7,77</td></tr>
+            <tr><td>25/07</td><td class="num">211</td><td class="num">11</td><td class="num">1</td><td class="num">7</td><td class="num">5,21%</td><td class="num">R$0,59</td><td class="num">R$162,90</td><td class="num">R$1.791,94</td><td class="num">R$54,69</td><td class="num">R$69,79</td><td class="num">R$124,48</td><td class="num">14,40×</td><td class="num">4,56×</td><td class="num">15,43×</td><td class="num">R$11,32</td></tr>
+            <tr><td>26/07</td><td class="num">214</td><td class="num">12</td><td class="num">3</td><td class="num">6</td><td class="num">5,61%</td><td class="num">R$0,80</td><td class="num">R$180,08</td><td class="num">R$2.161,01</td><td class="num">R$78,81</td><td class="num">R$93,33</td><td class="num">R$172,14</td><td class="num">12,55×</td><td class="num">7,95×</td><td class="num">9,95×</td><td class="num">R$14,34</td></tr>
+            <tr><td>27/07</td><td class="num">283</td><td class="num">19</td><td class="num">2</td><td class="num">9</td><td class="num">6,71%</td><td class="num">R$0,71</td><td class="num">R$202,84</td><td class="num">R$3.853,93</td><td class="num">R$68,37</td><td class="num">R$132,41</td><td class="num">R$200,78</td><td class="num">19,19×</td><td class="num">3,17×</td><td class="num">12,99×</td><td class="num">R$10,57</td></tr>
+            <tr><td>28/07</td><td class="num">323</td><td class="num">14</td><td class="num">1</td><td class="num">5</td><td class="num">4,33%</td><td class="num">R$0,51</td><td class="num">R$219,61</td><td class="num">R$3.074,55</td><td class="num">R$67,92</td><td class="num">R$97,71</td><td class="num">R$165,63</td><td class="num">18,56×</td><td class="num">0,78×</td><td class="num">8,99×</td><td class="num">R$11,83</td></tr>
+            <tr><td>29/07 <span title="o GA4 ainda está atribuindo as vendas deste dia por canal — o total já é real, o recorte por canal vai mudar" style="color:var(--warn); font-weight:600;">*</span></td><td class="num">295</td><td class="num">12</td><td class="num">1</td><td class="num">2</td><td class="num">4,07%</td><td class="num">R$0,44</td><td class="num">R$248,29</td><td class="num">R$2.979,43</td><td class="num">R$61,11</td><td class="num">R$68,83</td><td class="num">R$129,94</td><td class="num">22,93×</td><td class="num">7,03×</td><td class="num">7,27×</td><td class="num">R$10,83</td></tr>
+            <tr style="font-weight:600; background:var(--surface-2);"><td>TOTAL</td><td class="num">10.126</td><td class="num">570</td><td class="num">49</td><td class="num">213</td><td class="num">5,63%</td><td class="num">R$0,63</td><td class="num">R$244,86</td><td class="num">R$139.568,73</td><td class="num">R$3.058,33</td><td class="num">R$3.282,96</td><td class="num">R$6.341,29</td><td class="num">22,01×</td><td class="num">3,69×</td><td class="num">14,47×</td><td class="num">R$11,13</td></tr>
+      <!-- TABELA:FIM -->
+          </tbody>
+        </table>
+      </div>
+      <!-- FOOTNOTE:INICIO -->
+      <p class="footnote">Tabela cobre 01/07 a 29/07/2026. "Vnd. Meta"/"Vnd. Google" = transações GA4 por canal.</p>
+      <p class="footnote">* 29/07: o GA4 ainda não terminou de atribuir as vendas por canal (leva ~12h). O total de vendas e o faturamento do dia já são reais; as colunas por canal ainda vão mudar, então o dia fica de fora do ROAS e do CAC de mídia do mês até amadurecer. Corrige sozinho na próxima coleta.</p>
+      <!-- FOOTNOTE:FIM -->
+    </div>
+  </section>
+  <section class="panel rail-accent">
+    <div class="panel-head"><div><span class="eyebrow">Desempenho por Criativo · Meta Ads</span><h2>Melhores e piores anúncios do mês</h2></div><span class="pill pill-accent">Atualiza todo dia às 13h</span></div>
+    <div class="panel-body">
+      <!-- CRIATIVOS:INICIO -->
+      <div class="callout callout-critical"><strong>🚨 R$ 202,12 de gasto sem campanha correspondente</strong>O total cobrado na conta (R$ 3.183,30) supera a soma de todas as campanhas (R$ 2.981,18) em R$ 202,12 (6,3% do investido) — provável campanha excluída depois de gastar. Confira em Gerenciador de Anúncios → Faturamento → Atividade da conta.</div>
+      <p style="font-size:12.5px; text-transform:uppercase; color:var(--ink-faint);">Melhor custo por resultado</p>
+      <div class="tablewrap"><table><thead><tr><th>Anúncio</th><th>Campanha</th><th class="num">Gasto</th><th class="num">Resultados</th><th class="num">Custo/Result.</th></tr></thead><tbody>
+      <tr><td>ESTÁTICO - PROMO DIA DO AMIGO</td><td>[AL] [VENDAS] [PRODUTOS GENÉRICA] [17-06]</td><td class="num">R$117,14</td><td class="num">34</td><td class="num">R$3,45</td></tr>
+      <tr><td>AD-04-DESODORANTE-PRATA-COLOIDAL</td><td>[AB] 07 RMKT - [VOLTE-RMKT-CART] [IMAGEM-06-07]</td><td class="num">R$40,06</td><td class="num">7</td><td class="num">R$5,72</td></tr>
+      <tr><td>AD-01-VIDEO-QUENTE</td><td>[AB] [VENDAS-VIDEOS] [CREME-DENTAL-LANÇAMENTO] [20/05]</td><td class="num">R$11,83</td><td class="num">2</td><td class="num">R$5,92</td></tr>
+      <tr><td>CARROSSEL - DESODORANTE</td><td>[AL] [VENDAS] [PRODUTOS GENÉRICA] [17-06]</td><td class="num">R$14,41</td><td class="num">2</td><td class="num">R$7,21</td></tr>
+      <tr><td>AD-05-IU</td><td>[AB] [VENDAS] [CREME-DENTAL-LANÇAMENTO] [14/05]</td><td class="num">R$37,21</td><td class="num">4</td><td class="num">R$9,30</td></tr>
+      </tbody></table></div>
+      <p style="font-size:12.5px; text-transform:uppercase; color:var(--ink-faint); margin-top:18px;">Gasto sem nenhum resultado (candidatos a pausa)</p>
+      <div class="tablewrap"><table><thead><tr><th>Anúncio</th><th>Campanha</th><th class="num">Gasto</th></tr></thead><tbody>
+      <tr><td>AD-04-IU</td><td>[AB] [VENDAS] [CREME-DENTAL-LANÇAMENTO] [14/05]</td><td class="num">R$36,11</td></tr>
+      <tr><td>AD-03-VIDEO-SEM2%</td><td>[AB] [VENDAS-VIDEOS] [CREME-DENTAL-LANÇAMENTO] [20/05]</td><td class="num">R$33,99</td></tr>
+      <tr><td>AD1_PRATA COLOIDAL_IMAGEM</td><td>[VP] 05 CONVERSÃO - [PRATA COLOIDAL_29.01/ MIX QUENTES] - IMAGEM</td><td class="num">R$20,10</td></tr>
+      <tr><td>ESTÁTICO - PROMO DIA DOS PAIS 2</td><td>[AL] [VENDAS] [PRODUTOS GENÉRICA] [17-06]</td><td class="num">R$14,19</td></tr>
+      <tr><td>AD-06-IU</td><td>[AB] [VENDAS] [CREME-DENTAL-LANÇAMENTO] [14/05]</td><td class="num">R$11,47</td></tr>
+      </tbody></table></div>
+      <p class="footnote">58 anúncios com gasto no período de 01/07 a 31/07/2026; R$ 196,52 gastos no total sem nenhum resultado (soma de todos os anúncios sem resultado, não só os 5 listados acima).</p>
+      <!-- CRIATIVOS:FIM -->
+    </div>
+  </section>
+  <section class="panel rail-critical">
+    <div class="panel-head"><div><span class="eyebrow"><span class="eno">01</span> · Visão Geral</span><h2>CAC e ROAS por canal — reportado vs. real</h2></div><!-- PILL01:INICIO -->
+      <span class="pill pill-critical">Meta precisa de atenção</span>
+      <!-- PILL01:FIM --></div>
+    <div class="panel-body">
+      <!-- VISAOGERAL:INICIO -->
+      <p style="color:var(--ink-soft); font-size:13.5px;">"Reportado" é o que a plataforma mostra no gerenciador. "Vendas Tray" é o pedido que realmente entrou na loja — é a verdade, e é sobre ela que CAC e ROAS são calculados quando ela existe. Mês corrente (01/07 a 29/07).</p>
+      <div class="tablewrap"><table><thead><tr><th>Canal</th><th class="num">Investido (mês)</th><th class="num">Conv. reportada</th><th class="num">CAC reportado</th><th class="num">Vendas GA4</th><th class="num">Vendas Tray<br>(verdade)</th><th class="num">CAC real</th><th class="num">ROAS real</th></tr></thead><tbody>
+      <tr class="row-flag"><td>Meta Ads</td><td class="num">R$3.058,33</td><td class="num">182,0</td><td class="num">R$16,80</td><td class="num">49</td><td class="num"><strong>59</strong></td><td class="num">R$51,84</td><td class="num">4,44×</td></tr>
+      <tr><td>Google Ads</td><td class="num">R$3.282,96</td><td class="num">263,5</td><td class="num">R$12,46</td><td class="num">213</td><td class="num"><strong>209</strong></td><td class="num">R$15,71</td><td class="num">14,19×</td></tr>
+      </tbody></table></div>
+      <div class="callout callout-warn"><strong>O Meta reporta 3,1 compras para cada venda que realmente aconteceu</strong>São 182,0 conversões reportadas no mês contra 59 pedidos reais no Tray. No Google a mesma razão é 1,3:1 — a diferença ENTRE os dois canais é o sinal, não o valor absoluto de cada um. Parte disso é janela de atribuição (o Meta conta 7 dias por clique e 1 dia por visualização, o Tray conta último clique) e parte foi duplicação de evento do pixel, confirmada em 27/07/2026. Decida verba pela coluna de venda real.</div>
+      <p style="font-size:13.5px;"><strong>Decisão da semana:</strong> mantenha a verba do Meta onde está e direcione todo aumento pro Google — a trava combinada é ROAS real do Meta acima de 3× de forma sustentada, e hoje a média do mês (3,69×) passou de 3×, mas o dia típico (mediana 2,43×) ainda não — a média está puxada por poucos dias fortes, a trava NÃO está atingida.</p>
+      <!-- VISAOGERAL:FIM -->
+    </div>
+  </section>
+  <div class="two-col">
+    <section class="panel rail-good"><div class="panel-head"><div><span class="eyebrow"><span class="eno">02</span> · Oportunidades</span><h2>Onde dá pra escalar agora</h2></div></div>
+      <div class="panel-body">
+        <!-- ALERTAREGULATORIO:INICIO -->
+        <div class="callout callout-warn"><strong>⚖️ 87,9% da receita do mês vem de Prata/Ouro Coloidal</strong>Esses produtos usam alegações (prevenção de Alzheimer, Parkinson, AVC) que já levaram a ANVISA a banir a Goldplat Cosméticos pela mesma alegação (Resolução-RE nº 2.541/2024). Não é motivo pra pausar hoje, mas pesa antes de escalar mais verba paga neles — considere junto com o ROAS ao decidir.</div>
+      <!-- ALERTAREGULATORIO:FIM -->
+        <!-- OPORTUNIDADES:INICIO -->
+        <p style="font-size:12.5px; text-transform:uppercase; color:var(--ink-faint);">Google Ads — melhor eficiência (últimos 7 dias)</p>
+        <div class="barlist">
+          <div class="baritem"><span class="name" title="[VP]  SHOPPING - TODOS OS PRODUTOS">[VP]  SHOPPING - TODOS OS PRODUTOS</span><div class="bartrack"><div class="barfill" style="width:100.0%;"></div></div><span class="val num">11,49×</span></div>
+          <div class="baritem"><span class="name" title="[VP] - [PESQUISA | INSTITUCIONAL] - 28.10">[VP] - [PESQUISA | INSTITUCIONAL] - 28.10</span><div class="bartrack"><div class="barfill" style="width:93.7%;"></div></div><span class="val num">10,76×</span></div>
+          <div class="baritem"><span class="name" title="[VP] - [PMAX/ TODOS OS PRODUTOS]">[VP] - [PMAX/ TODOS OS PRODUTOS]</span><div class="bartrack"><div class="barfill" style="width:83.1%;"></div></div><span class="val num">9,54×</span></div>
+        </div>
+        <p class="footnote">3 campanha(s) ativa(s) com gasto, R$ 657,60 no período. ROAS = valor de conversão reportado pelo Google ÷ custo — é o número da plataforma, mais otimista que a venda confirmada no GA4 (compare com a seção 01). Coletado em 30/07, janela de 7 dias: campanha nova ou sazonal aparece aqui antes de aparecer na média do mês.</p>
+      <!-- OPORTUNIDADES:FIM -->
+      </div>
+    </section>
+    <section class="panel rail-warn"><div class="panel-head"><div><span class="eyebrow"><span class="eno">03</span> · Cortes</span><h2>Candidatas a pausar</h2></div><span class="pill pill-warn">Meta pede revisão</span></div>
+      <div class="panel-body">
+        <!-- CORTES:INICIO -->
+        <ul class="tight">
+          <li><strong>Anúncios Meta gastando sem nenhuma venda:</strong> R$ 196,52 no mês em anúncios com zero resultado (detalhe na seção "Desempenho por Criativo" acima). Os maiores: <em>AD-04-IU</em> (R$36,11), <em>AD-03-VIDEO-SEM2%</em> (R$33,99), <em>AD1_PRATA COLOIDAL_IMAGEM</em> (R$20,10) — candidatos diretos a pausa.</li>
+          <li><strong>Meta como canal:</strong> ROAS real 3,69× contra 14,47× do outro canal. Antes de cortar em bloco, confirme se é entrega ou tracking (seção 04) — mas o orçamento incremental rende mais no outro canal hoje.</li>
+          <li><strong>Google Ads:</strong> as 3 campanhas ativas seguem saudáveis nos últimos 7 dias (a mais fraca, <em>[VP] - [PMAX/ TODOS OS PRODUTOS]</em>, ainda rende 9,54×) — nada a cortar aqui.</li>
+        </ul>
+      <!-- CORTES:FIM -->
+      </div>
+    </section>
+  </div>
+  <section class="panel rail-critical"><div class="panel-head"><div><span class="eyebrow"><span class="eno">04</span> · Saúde Técnica</span><h2>O que está quebrado ou merece conserto</h2></div><span class="pill pill-warn">Conferência manual</span></div>
+    <div class="panel-body">
+      <!-- VERIFICADOEM:INICIO -->
+      <p class="footnote" style="margin-top:0;">Conferido ao vivo em 21/07/2026 (há 9 dias) — seção sem coleta automática: Merchant Center, Gerenciador de Eventos (EMQ/CAPI) não têm API neste pipeline. Um aviso aparece aqui quando passar de 14 dias.</p>
+      <!-- VERIFICADOEM:FIM -->
+      <div class="kv-grid">
+        <div class="kv"><div class="k">EMQ Meta Pixel (Purchase)</div><div class="v num">8,4 / 10</div></div>
+        <div class="kv"><div class="k">Produtos reprovados</div><div class="v num">6</div></div>
+        <div class="kv"><div class="k">Produtos com aviso</div><div class="v num">0</div></div>
+        <div class="kv"><div class="k">CAPI (dados do pedido)</div><div class="v" style="color:var(--good)">Confirmada 12/07</div></div>
+      </div>
+      <ul class="tight">
+        <li><strong>Pixel Meta:</strong> migração 2022→2025 concluída e estável (18/06).</li>
+        <li><strong>CAPI + Advanced Matching (e-mail):</strong> confirmado funcionando via API oficial em 17/07 — e-mail chegando em 100% dos eventos Purchase, EMQ desse evento subiu de 6,1 para 7,9. Telefone via CAPI segue em 43,6%, ainda sem o dado do CRM/WhatsApp — spec enviada pro Fred.</li>
+        <li><strong>UTM Meta:</strong> confirmado OK em 09/07 (proporção Meta×GA4 é diferença normal de atribuição, não UTM quebrado) — item fechado, sem ação pendente.</li>
+        <li><strong>Deduplicação Pixel × CAPI: confirmada OK (17/07)</strong> — o volume bruto de Purchase do pixel (654 em 01–15/07) é bem maior que as 254 vendas reais do site no período, o que levantou a suspeita de contagem duplicada entre navegador e servidor. Checado direto no Events Manager: o CAPI reporta <strong>+26,7% de conversões adicionais</strong> sobre o pixel sozinho (não +100%), confirmando que a Meta deduplica os dois lados pelo <code>event_id</code> corretamente — a diferença de volume bruto não infla as compras usadas nos relatórios de anúncio.</li>
+        <li><strong>Merchant Center revalidado ao vivo (21/07):</strong> 67 produtos, 61 aprovados, 6 reprovados (igual), <strong>0 com aviso/limitado</strong> — os 11 "com aviso" citados antes (17/07) foram resolvidos.</li>
+        <li><strong>EMQ do evento Compra revalidado ao vivo (21/07):</strong> 8,4/10, subiu de 7,9/10 (17/07) — 8 conjuntos de anúncios usando o evento, 1,3 mil compras recebidas no período.</li>
+      </ul>
+      <p class="footnote">Merchant Center e EMQ revalidados ao vivo em 21/07/2026 direto no Gerenciador de Eventos (números acima já são os novos).</p>
+    </div>
+  </section>
+  <!-- STATUS:INICIO -->
+      <p class="footnote" style="text-align:center;">Pipeline saudável · última atualização 30/07, 11:36 (Brasília) · todas as fontes coletadas sem erro.</p>
+      <!-- STATUS:FIM -->
+  <footer class="end">Painel Almacura · dados via MCP (Meta Ads, Google Ads, GA4, Merchant Center)</footer>
+</div>
+<script>
+/* Aba fixada não via a publicação das 13h (achado de 30/07/2026): a página é estática e só
+   muda no F5. Recarrega sozinha: a cada 30 min quando a aba está em segundo plano; quando
+   está visível, só após 6h (não puxa o tapete no meio da leitura). */
+(function () {
+  var carregadoEm = Date.now();
+  setInterval(function () {
+    var idadeMin = (Date.now() - carregadoEm) / 60000;
+    if ((document.hidden && idadeMin > 30) || (!document.hidden && idadeMin > 360)) {
+      location.reload();
+    }
+  }, 5 * 60000);
+})();
+</script>
+</body>
+</html>
