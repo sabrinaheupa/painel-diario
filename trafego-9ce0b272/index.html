@@ -233,7 +233,7 @@
   @media (max-width: 560px) { .spark-grid { grid-template-columns: 1fr; } }
   /* Flex em coluna: o card do dia da semana é mais alto (barras + rótulos), e sem isso o
      sparkline do lado ficava colado no topo com um vão morto embaixo. */
-  .spark-item { background: var(--surface-2); border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; }
+  .spark-item { background: var(--surface-2); border-radius: 10px; padding: 9px 12px; display: flex; flex-direction: column; }
   .spark-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; gap: 8px; }
   .spark-label { font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); }
   .spark-last { font-size: 15px; font-weight: 600; }
@@ -253,25 +253,26 @@
      Barras em HTML, não em SVG: o número de cada dia fica na tela com a mesma tipografia do
      resto do painel. Sete colunas de largura igual; a barra cresce de baixo para cima dentro
      de uma faixa de altura fixa, então o topo das barras é comparável de bater o olho. */
-  .dow { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin: 4px 0 2px; }
+  /* Compacto desde 04/08/2026, a pedido dela: barra de 86px para 26px, nome do dia abreviado e
+     a linha de pedidos por dia removida (segue no tooltip). O bloco caiu de ~150px para ~60px. */
+  .dow { display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px; margin: 1px 0 0; }
   .dow-col { display: flex; flex-direction: column; }
-  .dow-val { font-size: 13.5px; font-weight: 600; text-align: center; margin-bottom: 5px; letter-spacing: -0.01em; }
-  .dow-bar { height: 86px; display: flex; align-items: flex-end; justify-content: center; }
+  .dow-val { font-size: 11px; font-weight: 600; text-align: center; margin-bottom: 2px; letter-spacing: -0.02em; }
+  .dow-bar { height: 20px; display: flex; align-items: flex-end; justify-content: center; }
   /* Barra a 74% da coluna: em 100% as sete encostavam umas nas outras e o bloco lia como faixa
      de cor, não como gráfico de barras. */
   .dow-bar span { display: block; width: 74%; background: var(--accent); opacity: 0.3; border-radius: 5px 5px 0 0; }
   .dow-col.is-max .dow-bar span { opacity: 1; }
   /* Pior dia em cinza: a altura já diz "menor", a cor diz "este é O pior" sem legenda. */
   .dow-col.is-min .dow-bar span { background: var(--ink-faint); opacity: 0.42; }
-  .dow-nome { font-size: 11.5px; font-weight: 600; text-align: center; margin-top: 7px; }
+  .dow-nome { font-size: 10px; font-weight: 600; text-align: center; margin-top: 3px; }
   .dow-col.is-max .dow-nome { color: var(--accent); }
   .dow-ped { font-size: 10.5px; color: var(--ink-faint); text-align: center; margin-top: 1px; }
   .spark-janela { font-size: 11px; color: var(--ink-faint); letter-spacing: 0.02em; }
   /* Celular: 7 colunas dariam ~45px cada e o valor não caberia. Vira 4 por linha. */
   @media (max-width: 640px) {
-    .dow { grid-template-columns: repeat(4, 1fr); row-gap: 14px; }
-    .dow-bar { height: 62px; }
-    .dow-val { font-size: 12px; }
+    .dow { grid-template-columns: repeat(4, 1fr); row-gap: 10px; }
+    .dow-val { font-size: 11px; }
   }
   .wow-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin: 10px 0; }
   @media (max-width: 560px) { .wow-grid { grid-template-columns: 1fr; } }
@@ -405,53 +406,45 @@ Acompanhamento diário · Agosto 2026
       </div>
       <!-- SPARK:INICIO -->
 <div class="spark-item">
-        <div class="spark-head"><span class="spark-label">Faturamento médio por dia da semana</span><span class="spark-janela">últimos 90 dias · até 03/08</span></div>
+        <div class="spark-head"><span class="spark-label">Faturamento médio por dia da semana</span><span class="spark-janela" title="Média por dia da semana sobre 90 dias até 03/08, pedido pago da Tray, todos os canais do site. O mês corrente entra na conta; o dia de hoje não, porque a coleta dele ainda está incompleta.">Seg rende 109,0% mais que sáb · 90 dias até 03/08</span></div>
       <div class="dow" role="img" aria-label="Faturamento médio por dia da semana">
         <div class="dow-col is-max" title="segunda-feira: R$ 6.252 por dia · 25,4 pedidos por dia · média de 13 ocorrências">
           <div class="dow-val num">R$ 6.252</div>
           <div class="dow-bar"><span style="height:100.0%"></span></div>
-          <div class="dow-nome">Segunda</div>
-          <div class="dow-ped">25,4 pedidos</div>
+          <div class="dow-nome">Seg</div>
         </div>
         <div class="dow-col" title="terça-feira: R$ 5.541 por dia · 23,3 pedidos por dia · média de 12 ocorrências">
           <div class="dow-val num">R$ 5.541</div>
           <div class="dow-bar"><span style="height:88.6%"></span></div>
-          <div class="dow-nome">Terça</div>
-          <div class="dow-ped">23,3 pedidos</div>
+          <div class="dow-nome">Ter</div>
         </div>
         <div class="dow-col" title="quarta-feira: R$ 5.464 por dia · 20,8 pedidos por dia · média de 13 ocorrências">
           <div class="dow-val num">R$ 5.464</div>
           <div class="dow-bar"><span style="height:87.4%"></span></div>
-          <div class="dow-nome">Quarta</div>
-          <div class="dow-ped">20,8 pedidos</div>
+          <div class="dow-nome">Qua</div>
         </div>
         <div class="dow-col" title="quinta-feira: R$ 4.165 por dia · 18,8 pedidos por dia · média de 13 ocorrências">
           <div class="dow-val num">R$ 4.165</div>
           <div class="dow-bar"><span style="height:66.6%"></span></div>
-          <div class="dow-nome">Quinta</div>
-          <div class="dow-ped">18,8 pedidos</div>
+          <div class="dow-nome">Qui</div>
         </div>
         <div class="dow-col" title="sexta-feira: R$ 5.041 por dia · 19,8 pedidos por dia · média de 13 ocorrências">
           <div class="dow-val num">R$ 5.041</div>
           <div class="dow-bar"><span style="height:80.6%"></span></div>
-          <div class="dow-nome">Sexta</div>
-          <div class="dow-ped">19,8 pedidos</div>
+          <div class="dow-nome">Sex</div>
         </div>
         <div class="dow-col is-min" title="sábado: R$ 2.992 por dia · 12,1 pedidos por dia · média de 13 ocorrências">
           <div class="dow-val num">R$ 2.992</div>
           <div class="dow-bar"><span style="height:47.9%"></span></div>
-          <div class="dow-nome">Sábado</div>
-          <div class="dow-ped">12,1 pedidos</div>
+          <div class="dow-nome">Sáb</div>
         </div>
         <div class="dow-col" title="domingo: R$ 3.541 por dia · 14,8 pedidos por dia · média de 13 ocorrências">
           <div class="dow-val num">R$ 3.541</div>
           <div class="dow-bar"><span style="height:56.6%"></span></div>
-          <div class="dow-nome">Domingo</div>
-          <div class="dow-ped">14,8 pedidos</div>
+          <div class="dow-nome">Dom</div>
         </div>
       </div>
       </div>
-      <p class="footnote"><strong>Segunda</strong> rende 109,0% mais que sábado. Média por dia da semana, pedido pago da Tray, todos os canais do site. O mês corrente entra na conta, o dia de hoje não (coleta ainda incompleta).</p>
       <!-- SPARK:FIM -->
       <!-- WOW:INICIO -->
 
