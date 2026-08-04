@@ -85,10 +85,11 @@
 
   /* O lado a lado só entra a partir de 1650px de viewport, e o número é medido, não estético:
      as duas seções que dividem a linha (criativos e CAC/ROAS por canal) têm tabela larga.
-     Medição de 04/08/2026, coluna por coluna: em 840px e em 790px as duas tabelas cabem
-     inteiras; em 700px faltam 43 a 58px e em 620px faltam 123 a 138px, ou seja, passam a
-     exigir rolagem HORIZONTAL, que é pior do que rolar a página. 790px de coluna + 22 de
-     vão + 40 de padding = 1650px de viewport. Abaixo disso o painel empilha como sempre foi.
+     Medição refeita em 04/08/2026 depois da coluna de conversão do clique entrar na tabela
+     de canal: as duas cabem inteiras em coluna de 760px, e em 720px a de criativos passa a
+     faltar 30px, ou seja, exigiria rolagem HORIZONTAL, que é pior do que rolar a página.
+     790px de coluna + 22 de vão + 40 de padding = 1650px de viewport, com 30px de folga
+     sobre o pior caso. Abaixo disso o painel empilha como sempre foi.
      Na tela da Sabrina (1920 físico a 150% de escala = 1280px de viewport) isso entra com
      o zoom do Chrome em 75%, que o navegador guarda por site. */
   @media (min-width: 1650px) {
@@ -552,9 +553,9 @@ Acompanhamento diário · Agosto 2026
     <div class="panel-body">
       <!-- VISAOGERAL:INICIO -->
       <p style="color:var(--ink-soft); font-size:13.5px;">"Reportado" é o que a plataforma mostra no gerenciador. "Vendas Tray" é o pedido que realmente entrou na loja — é a verdade, e é sobre ela que CAC e ROAS são calculados quando ela existe. Mês corrente (01/08 a 03/08).</p>
-      <div class="tablewrap"><table><thead><tr><th>Canal</th><th class="num">Investido (mês)</th><th class="num">Conv. reportada</th><th class="num">CAC reportado</th><th class="num">Vendas GA4</th><th class="num">Vendas Tray<br>(verdade)</th><th class="num">CAC real</th><th class="num">ROAS real</th></tr></thead><tbody>
-      <tr class="row-flag"><td>Meta Ads</td><td class="num">R$169,82</td><td class="num">9,0</td><td class="num">R$18,87</td><td class="num">3</td><td class="num">—</td><td class="num">R$56,61</td><td class="num">6,85×</td></tr>
-      <tr><td>Google Ads</td><td class="num">R$274,53</td><td class="num">15,0</td><td class="num">R$18,32</td><td class="num">12</td><td class="num">—</td><td class="num">R$22,88</td><td class="num">13,32×</td></tr>
+      <div class="tablewrap"><table><thead><tr><th>Canal</th><th class="num">Investido<br>(mês)</th><th class="num">Cliques</th><th class="num">Conv.<br>reportada</th><th class="num">CAC<br>reportado</th><th class="num">Vendas<br>GA4</th><th class="num">Vendas Tray<br>(verdade)</th><th class="num" title="venda real ÷ cliques pagos do canal. NÃO é a Tx.Conv da tabela diária, que é venda ÷ sessão do site inteiro: clique e sessão são coisas diferentes e os dois números não se comparam.">Conv. do<br>clique</th><th class="num">CAC<br>real</th><th class="num">ROAS<br>real</th></tr></thead><tbody>
+      <tr class="row-flag"><td>Meta Ads</td><td class="num">R$169,82</td><td class="num">116</td><td class="num">9,0</td><td class="num">R$18,87</td><td class="num">3</td><td class="num">—</td><td class="num" title="3 vendas em 116 cliques, somando 2 dia(s) com coleta dos dois lados">2,59%</td><td class="num">R$56,61</td><td class="num">6,85×</td></tr>
+      <tr><td>Google Ads</td><td class="num">R$274,53</td><td class="num">216</td><td class="num">15,0</td><td class="num">R$18,32</td><td class="num">12</td><td class="num">—</td><td class="num" title="12 vendas em 216 cliques, somando 2 dia(s) com coleta dos dois lados">5,56%</td><td class="num">R$22,88</td><td class="num">13,32×</td></tr>
       </tbody></table></div>
       <div class="callout callout-warn"><strong>O Meta reporta 3,0 compras para cada venda que realmente aconteceu</strong>São 9,0 conversões reportadas no mês contra 3 transações confirmadas no GA4. No Google a mesma razão é 1,2:1 — a diferença ENTRE os dois canais é o sinal, não o valor absoluto de cada um. Parte disso é janela de atribuição (o Meta conta 7 dias por clique e 1 dia por visualização, o Tray conta último clique) e parte foi duplicação de evento do pixel, confirmada em 27/07/2026. Decida verba pela coluna de venda real.</div>
       <!-- VISAOGERAL:FIM -->
