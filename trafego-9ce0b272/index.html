@@ -71,11 +71,35 @@
   @media (prefers-reduced-motion: no-preference) {
     .tile, .tablewrap tbody tr td { transition: background-color 180ms ease, box-shadow 180ms ease, border-color 180ms ease; }
   }
-  .wrap { max-width: 1140px; margin: 0 auto; padding: 0 20px 72px; }
+  /* ===== Largura e densidade (round 39, 04/08/2026) =====
+     Pedido dela: "as coisas ficam centralizadas na tela, com espaço ao lado direito e
+     ao lado esquerdo (...) a gente puder olhar mais informações em uma tela só e não
+     precisar rolar tanto".
+     Duas mudanças: (1) a largura deixa de ser fixa em 1140px e passa a usar a tela toda
+     até 1720px; (2) o .wrap vira grade de 2 colunas, então bloco que cabe em meia
+     largura senta ao lado do vizinho em vez de empilhar.
+     Por padrão TODO filho ocupa a largura inteira. Só quem ganha a classe .col-meia
+     divide a linha. É o padrão seguro: bloco novo entra cheio, como sempre foi, e
+     ninguém precisa lembrar de nada ao acrescentar seção. */
+  .wrap { max-width: min(1720px, 100%); margin: 0 auto; padding: 0 20px 72px; }
+
+  /* O lado a lado só entra a partir de 1650px de viewport, e o número é medido, não estético:
+     as duas seções que dividem a linha (criativos e CAC/ROAS por canal) têm tabela larga.
+     Medição de 04/08/2026, coluna por coluna: em 840px e em 790px as duas tabelas cabem
+     inteiras; em 700px faltam 43 a 58px e em 620px faltam 123 a 138px, ou seja, passam a
+     exigir rolagem HORIZONTAL, que é pior do que rolar a página. 790px de coluna + 22 de
+     vão + 40 de padding = 1650px de viewport. Abaixo disso o painel empilha como sempre foi.
+     Na tela da Sabrina (1920 físico a 150% de escala = 1280px de viewport) isso entra com
+     o zoom do Chrome em 75%, que o navegador guarda por site. */
+  @media (min-width: 1650px) {
+    .wrap { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 22px; align-items: start; }
+    .wrap > * { grid-column: 1 / -1; }
+    .wrap > .col-meia { grid-column: span 1; }
+  }
 
   /* ===== Masthead ===== */
   header.top { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); }
-  .top-inner { max-width: 1140px; margin: 0 auto; padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .top-inner { max-width: min(1720px, 100%); margin: 0 auto; padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
   .brand { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
   .brand .leaf { width: 22px; height: 22px; flex-shrink: 0; color: var(--brand); display: block; }
   .brand h1 { font-size: 23px; letter-spacing: 0.01em; line-height: 1.15; }
@@ -85,13 +109,13 @@
   @media (max-width: 760px) { .brand .tag { border-left: none; padding-left: 0; width: 100%; } }
 
   /* ===== Hero — números-manchete ===== */
-  .hero { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin: 30px 0 26px; }
+  .hero { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin: 20px 0 16px; }
   @media (max-width: 900px) { .hero { grid-template-columns: repeat(2, 1fr); } }
   /* Achado do UX (round 25): em celular estreito (~360-390px), 2 colunas deixavam ~100px
      por tile — valores como "R$ 86.808,39" em serifa grande precisam de ~180-220px e
      quebravam. 1 coluna dá a largura inteira pro número que precisa ser captado em 3s. */
   @media (max-width: 480px) { .hero { grid-template-columns: 1fr; } }
-  .tile { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 18px 18px 16px; box-shadow: var(--shadow); overflow: hidden; }
+  .tile { position: relative; background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px 13px; box-shadow: var(--shadow); overflow: hidden; }
   .tile::before { content: ""; position: absolute; top: 0; left: 18px; right: 18px; height: 2px; background: linear-gradient(90deg, var(--brand), transparent); border-radius: 0 0 2px 2px; opacity: 0.55; }
   .tile .label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.09em; color: var(--ink-faint); }
   /* Números-manchete em serifa (voz da marca); mono fica só na tabela densa. */
@@ -100,19 +124,19 @@
   .tile .sub { font-size: 12px; color: var(--ink-soft); margin-top: 6px; line-height: 1.5; }
 
   /* ===== Painéis ===== */
-  section.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); margin-bottom: 26px; overflow: hidden; }
-  .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 22px 26px 16px; border-bottom: 1px solid var(--line); }
+  section.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); margin-bottom: 16px; overflow: hidden; }
+  .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 15px 22px 12px; border-bottom: 1px solid var(--line); }
   .panel-head h2 { font-size: 21px; letter-spacing: 0.005em; }
   .panel-head .eyebrow { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.11em; color: var(--ink-faint); display: block; margin-bottom: 5px; }
   .panel-head .eyebrow .eno { font-family: "Apple Garamond", Garamond, "EB Garamond", Georgia, "Times New Roman", serif; font-size: 14px; color: var(--accent); font-weight: 700; letter-spacing: 0.02em; }
-  .panel-body { padding: 18px 26px 26px; }
+  .panel-body { padding: 14px 22px 18px; }
   .rail-good { border-left: 4px solid var(--good); }
   .rail-warn { border-left: 4px solid var(--warn); }
   .rail-critical { border-left: 4px solid var(--critical); }
   .rail-accent { border-left: 4px solid var(--brand); }
   @media (max-width: 560px) {
-    .panel-head { padding: 18px 18px 14px; flex-wrap: wrap; }
-    .panel-body { padding: 16px 18px 20px; }
+    .panel-head { padding: 14px 18px 11px; flex-wrap: wrap; }
+    .panel-body { padding: 13px 18px 16px; }
   }
 
   .pill { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 600; padding: 4px 11px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.05em; white-space: nowrap; }
@@ -121,7 +145,7 @@
   .pill-critical { background: var(--critical-soft); color: var(--critical); }
   .pill-accent { background: var(--accent-soft); color: var(--accent); }
 
-  .callout { border-radius: 10px; padding: 14px 16px 14px 18px; margin: 14px 0; font-size: 13.5px; line-height: 1.55; }
+  .callout { border-radius: 10px; padding: 11px 14px 11px 16px; margin: 10px 0; font-size: 13.5px; line-height: 1.55; }
   .callout-critical { background: var(--critical-soft); border: 1px solid color-mix(in srgb, var(--critical) 45%, transparent); border-left: 4px solid var(--critical); }
   /* Hierarquia visual entre alertas (achado do UX, round 25): 5 callouts vermelhos idênticos
      na mesma tela faziam o vermelho parar de significar "isso é o mais urgente" já no
@@ -148,7 +172,7 @@
   /* ===== Tabelas ===== */
   .tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
   table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 560px; }
-  th, td { padding: 9px 8px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th, td { padding: 7px 8px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
   th { background: var(--surface-2); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-soft); font-weight: 600; border-bottom: 2px solid color-mix(in srgb, var(--brand) 35%, var(--line)); }
   tbody tr:last-child td { border-bottom: none; }
   .tablewrap tbody tr:hover td, .tablewrap tbody tr:hover td:first-child { background: var(--surface-2); }
@@ -189,11 +213,12 @@
   .tablewrap table tr:last-child td:first-child { background: var(--surface-2); }
 
   /* ===== Blocos de indicadores ===== */
-  .kv-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 10px; margin: 14px 0; }
-  .kv { background: var(--surface-2); border-radius: 10px; padding: 12px 14px; border-left: 3px solid color-mix(in srgb, var(--brand) 40%, transparent); }
+  /* 180px em vez de 210px: com a tela inteira, os 10 indicadores passam de 3 linhas para 2. */
+  .kv-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin: 10px 0; }
+  .kv { background: var(--surface-2); border-radius: 10px; padding: 9px 12px; border-left: 3px solid color-mix(in srgb, var(--brand) 40%, transparent); }
   .kv .k { font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); }
   .kv .v { font-size: 18px; margin-top: 4px; }
-  .spark-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 14px 0; }
+  .spark-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 10px 0; }
   @media (max-width: 560px) { .spark-grid { grid-template-columns: 1fr; } }
   /* Flex em coluna: o card do dia da semana é mais alto (barras + rótulos), e sem isso o
      sparkline do lado ficava colado no topo com um vão morto embaixo. */
@@ -208,9 +233,9 @@
   .dow-labels span { font-size: 10px; font-weight: 600; text-align: center; letter-spacing: 0.04em; color: var(--ink-faint); }
   .dow-labels .is-max { color: var(--accent); }
   .dow-labels .is-min { opacity: 0.55; }
-  .wow-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 14px 0; }
+  .wow-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 10px 0; }
   @media (max-width: 560px) { .wow-grid { grid-template-columns: 1fr; } }
-  .wow-item { background: var(--surface-2); border-radius: 10px; padding: 12px 14px; }
+  .wow-item { background: var(--surface-2); border-radius: 10px; padding: 10px 12px; }
   .wow-label { font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); }
   .wow-val { font-size: 21px; font-weight: 600; margin: 4px 0 2px; }
   .wow-delta { font-size: 12px; font-weight: 600; }
@@ -218,7 +243,7 @@
   .wow-down { color: var(--critical); }
   .wow-flat { color: var(--ink-faint); }
   .wow-arrow { font-size: 13px; }
-  .barlist { display: flex; flex-direction: column; gap: 10px; margin: 14px 0; }
+  .barlist { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
   .baritem { display: grid; grid-template-columns: 130px 1fr 74px; align-items: center; gap: 10px; font-size: 13px; }
   .baritem .name { color: var(--ink-soft); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .bartrack { height: 8px; background: var(--surface-2); border-radius: 5px; overflow: hidden; }
@@ -233,7 +258,7 @@
   }
 
   /* ===== Banner de ritmo de meta (pace) ===== */
-  .pace { display: flex; align-items: center; gap: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); padding: 18px 22px; margin-bottom: 26px; border-left: 4px solid var(--ink-faint); }
+  .pace { display: flex; align-items: center; gap: 16px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); padding: 14px 20px; margin-bottom: 16px; border-left: 4px solid var(--ink-faint); }
   .pace.is-adiantado { border-left-color: var(--good); }
   .pace.is-no_ritmo { border-left-color: var(--brand); }
   .pace.is-atrasado { border-left-color: var(--critical); }
@@ -257,7 +282,7 @@
     .pace-bar { margin-top: 16px; }
   }
 
-  .alerta-topo { margin-bottom: 26px; }
+  .alerta-topo { margin-bottom: 16px; }
   .alerta-topo .callout { margin: 0; }
   .footnote { font-size: 12px; color: var(--ink-faint); margin-top: 8px; }
   ul.tight { margin: 8px 0; padding-left: 18px; }
@@ -443,7 +468,7 @@ Acompanhamento diário · Agosto 2026
       <!-- ARQUIVO:FIM -->
     </div>
   </section>
-  <section class="panel rail-accent">
+  <section class="panel col-meia rail-accent">
     <div class="panel-head"><div><span class="eyebrow">Desempenho por Criativo · Meta Ads</span><h2>Melhores e piores anúncios do mês</h2></div><span class="pill pill-accent">Atualiza todo dia às 13h</span></div>
     <div class="panel-body">
       <!-- CRIATIVOS:INICIO -->
@@ -463,7 +488,7 @@ Acompanhamento diário · Agosto 2026
       <!-- CRIATIVOS:FIM -->
     </div>
   </section>
-  <section class="panel rail-critical">
+  <section class="panel col-meia rail-critical">
     <div class="panel-head"><div><span class="eyebrow"><span class="eno">01</span> · Visão Geral</span><h2>CAC e ROAS por canal — reportado vs. real</h2></div><!-- PILL01:INICIO -->
       <span class="pill pill-good">Os dois canais com retorno sustentado</span>
       <!-- PILL01:FIM --></div>
