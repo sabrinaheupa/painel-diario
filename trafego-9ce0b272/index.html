@@ -195,11 +195,19 @@
   .kv .v { font-size: 18px; margin-top: 4px; }
   .spark-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin: 14px 0; }
   @media (max-width: 560px) { .spark-grid { grid-template-columns: 1fr; } }
-  .spark-item { background: var(--surface-2); border-radius: 10px; padding: 12px 14px; }
+  /* Flex em coluna: o card do dia da semana é mais alto (barras + rótulos), e sem isso o
+     sparkline do lado ficava colado no topo com um vão morto embaixo. */
+  .spark-item { background: var(--surface-2); border-radius: 10px; padding: 12px 14px; display: flex; flex-direction: column; }
   .spark-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 6px; gap: 8px; }
   .spark-label { font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); }
   .spark-last { font-size: 15px; font-weight: 600; }
-  .spark-svg { width: 100%; height: 44px; display: block; }
+  .spark-svg { width: 100%; height: 44px; display: block; flex: 1 1 auto; min-height: 44px; }
+  /* Rótulos do gráfico de dia da semana: ficam em HTML, e não dentro do SVG, porque o SVG usa
+     preserveAspectRatio="none" (barra estica sem problema, letra sairia deformada). */
+  .dow-labels { display: grid; grid-template-columns: repeat(7, 1fr); margin-top: 5px; }
+  .dow-labels span { font-size: 10px; font-weight: 600; text-align: center; letter-spacing: 0.04em; color: var(--ink-faint); }
+  .dow-labels .is-max { color: var(--accent); }
+  .dow-labels .is-min { opacity: 0.55; }
   .wow-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 14px 0; }
   @media (max-width: 560px) { .wow-grid { grid-template-columns: 1fr; } }
   .wow-item { background: var(--surface-2); border-radius: 10px; padding: 12px 14px; }
@@ -330,10 +338,12 @@ Acompanhamento diário · Agosto 2026
         <svg class="spark-svg" viewBox="0 0 240 44" preserveAspectRatio="none" role="img" aria-hidden="true"><defs><linearGradient id="sg-fat" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--accent)" stop-opacity="0.18"></stop><stop offset="1" stop-color="var(--accent)" stop-opacity="0"></stop></linearGradient></defs><polygon points="3.0,41.0 3.0,7.4 120.0,8.2 237.0,3.0 237.0,41.0" fill="url(#sg-fat)"></polygon><polyline points="3.0,7.4 120.0,8.2 237.0,3.0" fill="none" stroke="var(--accent)" stroke-width="1.5" stroke-linejoin="round"></polyline><circle cx="237.0" cy="3.0" r="2.5" fill="var(--accent)"></circle></svg>
       </div>
       <div class="spark-item">
-        <div class="spark-head"><span class="spark-label">Vendas por dia (mês)</span><span class="spark-last num">18</span></div>
-        <svg class="spark-svg" viewBox="0 0 240 44" preserveAspectRatio="none" role="img" aria-hidden="true"><defs><linearGradient id="sg-ven" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--good)" stop-opacity="0.18"></stop><stop offset="1" stop-color="var(--good)" stop-opacity="0"></stop></linearGradient></defs><polygon points="3.0,41.0 3.0,17.0 120.0,3.0 237.0,5.0 237.0,41.0" fill="url(#sg-ven)"></polygon><polyline points="3.0,17.0 120.0,3.0 237.0,5.0" fill="none" stroke="var(--good)" stroke-width="1.5" stroke-linejoin="round"></polyline><circle cx="237.0" cy="5.0" r="2.5" fill="var(--good)"></circle></svg>
+        <div class="spark-head"><span class="spark-label">Faturamento por dia da semana</span><span class="spark-last num">Seg · R$ 6.252</span></div>
+        <svg class="spark-svg" viewBox="0 0 240 44" preserveAspectRatio="none" role="img" aria-label="Faturamento médio por dia da semana"><rect x="6.5" y="3.0" width="21.3" height="38.0" rx="2" fill="var(--accent)" fill-opacity="1"><title>segunda-feira: R$ 6.252 por dia · 25,4 pedidos por dia · 13 ocorrências</title></rect><rect x="40.8" y="7.3" width="21.3" height="33.7" rx="2" fill="var(--accent)" fill-opacity="0.32"><title>terça-feira: R$ 5.541 por dia · 23,3 pedidos por dia · 12 ocorrências</title></rect><rect x="75.1" y="7.8" width="21.3" height="33.2" rx="2" fill="var(--accent)" fill-opacity="0.32"><title>quarta-feira: R$ 5.464 por dia · 20,8 pedidos por dia · 13 ocorrências</title></rect><rect x="109.4" y="15.7" width="21.3" height="25.3" rx="2" fill="var(--accent)" fill-opacity="0.32"><title>quinta-feira: R$ 4.165 por dia · 18,8 pedidos por dia · 13 ocorrências</title></rect><rect x="143.7" y="10.4" width="21.3" height="30.6" rx="2" fill="var(--accent)" fill-opacity="0.32"><title>sexta-feira: R$ 5.041 por dia · 19,8 pedidos por dia · 13 ocorrências</title></rect><rect x="177.9" y="22.8" width="21.3" height="18.2" rx="2" fill="var(--ink-faint)" fill-opacity="0.38"><title>sábado: R$ 2.992 por dia · 12,1 pedidos por dia · 13 ocorrências</title></rect><rect x="212.2" y="19.5" width="21.3" height="21.5" rx="2" fill="var(--accent)" fill-opacity="0.32"><title>domingo: R$ 3.541 por dia · 14,8 pedidos por dia · 13 ocorrências</title></rect></svg>
+        <div class="dow-labels"><span class="is-max">Seg</span><span>Ter</span><span>Qua</span><span>Qui</span><span>Sex</span><span class="is-min">Sáb</span><span>Dom</span></div>
       </div>
       </div>
+      <p class="footnote">Média por dia da semana nos últimos 90 dias (até 03/08): <strong>segunda-feira</strong> é o dia mais forte (R$ 6.252 e 25,4 pedidos por dia) e <strong>sábado</strong> o mais fraco (R$ 2.992 e 12,1 pedidos por dia), 109,0% de diferença entre os dois. Fonte: pedidos pagos da Tray, todos os canais do site. Passe o mouse em cada barra para ver o dia.</p>
       <!-- SPARK:FIM -->
       <!-- WOW:INICIO -->
 
