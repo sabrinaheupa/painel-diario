@@ -121,6 +121,10 @@
   /* Números-manchete em serifa (voz da marca); mono fica só na tabela densa. */
   .tile .value { font-family: "Apple Garamond", Garamond, "EB Garamond", Georgia, "Times New Roman", serif; font-size: 37px; font-weight: 700; letter-spacing: -0.015em; line-height: 1.05; margin-top: 8px; font-variant-numeric: tabular-nums; }
   .tile .value .cur { font-size: 0.55em; font-weight: 400; color: var(--ink-faint); margin-right: 3px; }
+  /* Variação vs. mês fechado dentro do número-manchete (round 40). A observação entre
+     parênteses vem em tom apagado: é ressalva, não manchete, mas não pode sumir. */
+  .tile-delta { font-size: 12px; font-weight: 600; margin-top: 6px; }
+  .tile-delta-obs { font-weight: 400; color: var(--ink-faint); }
   .tile .sub { font-size: 12px; color: var(--ink-soft); margin-top: 6px; line-height: 1.5; }
 
   /* ===== Painéis ===== */
@@ -262,8 +266,11 @@
     .dow-bar { height: 62px; }
     .dow-val { font-size: 12px; }
   }
-  .wow-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 10px 0; }
+  .wow-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin: 10px 0; }
   @media (max-width: 560px) { .wow-grid { grid-template-columns: 1fr; } }
+  /* Teto de 420px: com os três cards originais (408px cada em tela cheia) o limite nem pega,
+     mas desde que só sobrou Vendas ele impede um número pequeno de esticar por 1.200px. */
+  .wow-item { max-width: 420px; }
   .wow-item { background: var(--surface-2); border-radius: 10px; padding: 10px 12px; }
   .wow-label { font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-faint); }
   .wow-val { font-size: 21px; font-weight: 600; margin: 4px 0 2px; }
@@ -341,9 +348,9 @@
   <div class="hero">
     <!-- HERO:INICIO -->
     <div class="tile"><div class="label">Receita paga validada (GA4)</div><div class="value num"><span class="cur">R$</span>4.820,92</div><div class="sub">Meta + Google, transação real, não estimativa de plataforma</div></div>
-    <div class="tile"><div class="label">ROAS de mídia (real)</div><div class="value num">10,85×</div><div class="sub">R$ 444,35 investidos → R$ 4.820,92 em vendas pagas confirmadas</div></div>
+    <div class="tile"><div class="label">ROAS de mídia (real)</div><div class="value num">10,85×</div><div class="tile-delta wow-up"><span class="wow-arrow">↑</span> +19,8% vs. julho fechado <span class="tile-delta-obs">(agosto tem 3 de 31 dias)</span></div><div class="sub">R$ 444,35 investidos → R$ 4.820,92 em vendas pagas confirmadas</div></div>
     <div class="tile"><div class="label">CAC real (blended)</div><div class="value num"><span class="cur">R$</span>29,62</div><div class="sub">15 vendas reais atribuídas a mídia paga</div></div>
-    <div class="tile"><div class="label">Faturamento total do site</div><div class="value num"><span class="cur">R$</span>13.721,62</div><div class="sub">Todos os canais (866 sessões) — não é retorno de mídia paga</div></div>
+    <div class="tile"><div class="label">Faturamento total do site</div><div class="value num"><span class="cur">R$</span>13.721,62</div><div class="tile-delta wow-down"><span class="wow-arrow">↓</span> -90,5% vs. julho fechado <span class="tile-delta-obs">(agosto tem 3 de 31 dias)</span></div><div class="sub">Todos os canais (866 sessões) — não é retorno de mídia paga</div></div>
       <!-- HERO:FIM -->
   </div>
   <!-- PACE:INICIO -->
@@ -446,22 +453,12 @@ Acompanhamento diário · Agosto 2026
       <p style="font-size:12.5px; text-transform:uppercase; color:var(--ink-faint); margin-top:14px;">Agosto (até agora) vs. Julho (mês fechado)</p>
 <div class="wow-grid">
       <div class="wow-item">
-        <div class="wow-label">Faturamento</div>
-        <div class="wow-val num">R$ 13.722</div>
-        <div class="wow-delta wow-down"><span class="wow-arrow">↓</span> -90,5% vs. Julho</div>
-      </div>
-      <div class="wow-item">
-        <div class="wow-label">Vendas</div>
+        <div class="wow-label">Vendas do site</div>
         <div class="wow-val num">49</div>
         <div class="wow-delta wow-down"><span class="wow-arrow">↓</span> -91,8% vs. Julho</div>
       </div>
-      <div class="wow-item">
-        <div class="wow-label">ROAS de mídia</div>
-        <div class="wow-val num">10,85×</div>
-        <div class="wow-delta wow-up"><span class="wow-arrow">↑</span> +19,8% vs. Julho</div>
       </div>
-      </div>
-      <p class="footnote">Agosto ainda está em andamento (3 dias até agora) contra Julho fechado (mês inteiro) — não é comparação dia-a-dia equivalente, tende a mostrar % menor no início/meio do mês mesmo com bom ritmo. Fica mais precisa perto do fim do mês.</p>
+      <p class="footnote">Agosto ainda está em andamento (3 dias até agora) contra Julho fechado (mês inteiro) — não é comparação dia-a-dia equivalente, tende a mostrar % menor no início/meio do mês mesmo com bom ritmo. Fica mais precisa perto do fim do mês. Vale também para as variações nos números do topo.</p>
       <!-- MOM:FIM -->
       <!-- ABASMES:INICIO -->
       <div class="abas-mes" role="group" aria-label="Escolha o mês da tabela diária">
